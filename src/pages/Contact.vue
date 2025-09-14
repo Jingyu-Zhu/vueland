@@ -109,6 +109,25 @@
                 </div>
               </div>
             </div>
+
+            <!-- Error Message -->
+            <div v-if="showError" class="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <div class="flex">
+                <div class="flex-shrink-0">
+                  <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                  </svg>
+                </div>
+                <div class="ml-3">
+                  <p class="text-sm font-medium text-red-800">
+                    {{ errorMessage }}
+                  </p>
+                  <p class="mt-2 text-sm text-red-700">
+                    Please try again or contact us directly at hello@vueland.com
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <!-- Contact Information -->
@@ -235,6 +254,8 @@ export default {
     // Form state
     const isSubmitting = ref(false)
     const showSuccess = ref(false)
+    const showError = ref(false)
+    const errorMessage = ref('')
 
     // Form submission handler
     const submitForm = async () => {
@@ -264,6 +285,11 @@ export default {
               body: JSON.stringify(form)
             })
             
+            if (!response.ok) {
+              const errorText = await response.text()
+              throw new Error(`HTTP ${response.status}: ${errorText}`)
+            }
+            
             const data = await response.json()
             console.log('Railway API response:', data)
             
@@ -274,7 +300,10 @@ export default {
             console.log('Form submitted via Railway backend successfully')
           } catch (error) {
             console.error('Railway API failed:', error)
-            console.log('Falling back to demo mode')
+            
+            // 显示具体错误信息给用户
+            errorMessage.value = `Failed to connect to backend: ${error.message}. Please try again or contact us directly.`
+            showError.value = true
             
             // 在控制台显示表单数据，方便手动处理
             console.log('Contact form data:', {
@@ -290,21 +319,33 @@ export default {
           }
         } else if (isLocalDev) {
           // 本地开发环境：调用本地 API
-          const response = await fetch('http://localhost:3001/api/contact', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(form)
-          })
-          
-          const data = await response.json()
-          
-          if (!data.success) {
-            throw new Error(data.message || 'Failed to send message')
+          try {
+            const response = await fetch('http://localhost:3001/api/contact', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(form)
+            })
+            
+            if (!response.ok) {
+              const errorText = await response.text()
+              throw new Error(`HTTP ${response.status}: ${errorText}`)
+            }
+            
+            const data = await response.json()
+            
+            if (!data.success) {
+              throw new Error(data.message || 'Failed to send message')
+            }
+            
+            console.log('Form submitted via local API')
+          } catch (error) {
+            console.error('Local API failed:', error)
+            errorMessage.value = `Failed to connect to local backend: ${error.message}. Please make sure the backend is running on port 3001.`
+            showError.value = true
+            await new Promise(resolve => setTimeout(resolve, 1000))
           }
-          
-          console.log('Form submitted via local API')
         } else {
           // 其他环境：模拟成功
           await new Promise(resolve => setTimeout(resolve, 1000))
@@ -336,6 +377,8 @@ export default {
       form,
       isSubmitting,
       showSuccess,
+      showError,
+      errorMessage,
       submitForm
     }
   }

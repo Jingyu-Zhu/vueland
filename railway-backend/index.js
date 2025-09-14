@@ -14,10 +14,13 @@ app.use(cors({
   origin: [
     'https://jingyu-zhu.github.io',
     'https://jingyu-zhu.github.io/vueland',
+    'https://railway.com',
     'http://localhost:5173',
     'http://localhost:3000'
   ],
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
 
