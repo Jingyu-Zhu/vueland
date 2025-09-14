@@ -242,6 +242,8 @@ export default {
       showSuccess.value = false
 
       try {
+        console.log('Submitting form:', form)
+        
         // Call the API endpoint
         const response = await fetch('/api/contact', {
           method: 'POST',
@@ -251,7 +253,29 @@ export default {
           body: JSON.stringify(form)
         })
 
-        const data = await response.json()
+        console.log('Response status:', response.status)
+        console.log('Response headers:', response.headers)
+        
+        // Check if response is ok
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`)
+        }
+
+        // Get response text first to debug
+        const responseText = await response.text()
+        console.log('Response text:', responseText)
+        
+        // Try to parse JSON
+        let data
+        try {
+          data = JSON.parse(responseText)
+        } catch (parseError) {
+          console.error('JSON parse error:', parseError)
+          console.error('Response text that failed to parse:', responseText)
+          throw new Error('Invalid response from server')
+        }
+
+        console.log('Parsed data:', data)
 
         if (data.success) {
           // Reset form
