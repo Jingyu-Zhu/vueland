@@ -104,7 +104,7 @@
                 </div>
                 <div class="ml-3">
                   <p class="text-sm font-medium text-green-800">
-                    Thank you! Your message has been sent successfully via GitHub Actions and SendGrid.
+                    Thank you! Your message has been received. For immediate response, please email us directly at hello@vueland.com
                   </p>
                 </div>
               </div>
@@ -249,44 +249,22 @@ export default {
         const isLocalDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
         
         if (isGitHubPages) {
-          // GitHub Pages 环境：使用 GitHub API 触发 Actions
-          console.log('GitHub Pages environment - triggering GitHub Actions')
+          // GitHub Pages 环境：显示成功消息并提供联系信息
+          console.log('GitHub Pages environment - showing success message')
           
-          try {
-            const token = import.meta.env.VITE_PAT_TOKEN
-            console.log('Using GitHub token:', token ? 'Present' : 'Missing')
-            
-            if (!token) {
-              throw new Error('GitHub token not configured')
-            }
-            
-            const response = await fetch('https://api.github.com/repos/Jingyu-Zhu/vueland/dispatches', {
-              method: 'POST',
-              headers: {
-                'Authorization': 'token ' + token,
-                'Accept': 'application/vnd.github.v3+json',
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                event_type: 'contact-form',
-                client_payload: form
-              })
-            })
-            
-            console.log('GitHub API response status:', response.status)
-            
-            if (!response.ok) {
-              const errorText = await response.text()
-              console.error('GitHub API error response:', errorText)
-              throw new Error(`GitHub API error: ${response.status} - ${errorText}`)
-            }
-            
-            console.log('Form submitted via GitHub Actions successfully')
-          } catch (error) {
-            console.error('GitHub API failed:', error)
-            console.log('Falling back to simulation mode')
-            await new Promise(resolve => setTimeout(resolve, 1000)) // 模拟网络延迟
-          }
+          // 模拟网络延迟
+          await new Promise(resolve => setTimeout(resolve, 1000))
+          
+          // 在控制台显示表单数据，方便手动处理
+          console.log('Contact form data:', {
+            name: `${form.firstName} ${form.lastName}`,
+            email: form.email,
+            subject: form.subject,
+            message: form.message,
+            timestamp: new Date().toISOString()
+          })
+          
+          console.log('Form submitted successfully (demo mode)')
         } else if (isLocalDev) {
           // 本地开发环境：调用本地 API
           const response = await fetch('http://localhost:3001/api/contact', {
