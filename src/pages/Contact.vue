@@ -256,7 +256,7 @@ export default {
             const response = await fetch('https://api.github.com/repos/Jingyu-Zhu/vueland/dispatches', {
               method: 'POST',
               headers: {
-                'Authorization': 'token ' + (import.meta.env.VITE_GITHUB_TOKEN || ''),
+                'Authorization': 'token ' + (import.meta.env.VITE_PAT_TOKEN || ''),
                 'Accept': 'application/vnd.github.v3+json',
                 'Content-Type': 'application/json'
               },

@@ -55,14 +55,14 @@
 3. **添加 Token 到 Secrets**：
    - 在仓库 Secrets 中添加：
    ```
-   GITHUB_TOKEN=你的GitHub_Personal_Access_Token
+   PAT_TOKEN=你的GitHub_Personal_Access_Token
    ```
 
 ### 第四步：更新前端环境变量
 
 1. **创建 `.env` 文件**（本地开发用）：
    ```
-   VITE_GITHUB_TOKEN=你的GitHub_Personal_Access_Token
+   VITE_PAT_TOKEN=你的GitHub_Personal_Access_Token
    ```
 
 2. **重新构建和部署**：
