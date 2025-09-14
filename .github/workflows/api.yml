@@ -4,6 +4,9 @@ on:
   repository_dispatch:
     types: [contact-form]
 
+permissions:
+  contents: read
+
 jobs:
   handle-contact:
     runs-on: ubuntu-latest
