@@ -252,6 +252,7 @@ export default {
           // GitHub Pages 环境：调用 Railway 后端
           console.log('GitHub Pages environment - calling Railway backend')
           
+          // 从环境变量或默认值获取 Railway URL
           const railwayUrl = import.meta.env.VITE_RAILWAY_URL || 'https://vueland-backend-production.up.railway.app'
           
           try {
