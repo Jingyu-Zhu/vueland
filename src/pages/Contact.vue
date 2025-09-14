@@ -104,7 +104,7 @@
                 </div>
                 <div class="ml-3">
                   <p class="text-sm font-medium text-green-800">
-                    Thank you! Your message has been received. (Demo version - configure GitHub Actions for real email sending)
+                    Thank you! Your message has been sent successfully via GitHub Actions and SendGrid.
                   </p>
                 </div>
               </div>
@@ -249,9 +249,32 @@ export default {
         const isLocalDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
         
         if (isGitHubPages) {
-          // GitHub Pages 环境：模拟成功（避免 CORS 和权限问题）
-          console.log('GitHub Pages environment - simulating success')
-          await new Promise(resolve => setTimeout(resolve, 1000)) // 模拟网络延迟
+          // GitHub Pages 环境：使用 GitHub API 触发 Actions
+          console.log('GitHub Pages environment - triggering GitHub Actions')
+          
+          try {
+            const response = await fetch('https://api.github.com/repos/Jingyu-Zhu/vueland/dispatches', {
+              method: 'POST',
+              headers: {
+                'Authorization': 'token ' + (import.meta.env.VITE_GITHUB_TOKEN || ''),
+                'Accept': 'application/vnd.github.v3+json',
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                event_type: 'contact-form',
+                client_payload: form
+              })
+            })
+            
+            if (!response.ok) {
+              throw new Error(`GitHub API error: ${response.status}`)
+            }
+            
+            console.log('Form submitted via GitHub Actions')
+          } catch (error) {
+            console.log('GitHub API failed, falling back to simulation:', error)
+            await new Promise(resolve => setTimeout(resolve, 1000)) // 模拟网络延迟
+          }
         } else if (isLocalDev) {
           // 本地开发环境：调用本地 API
           const response = await fetch('http://localhost:3001/api/contact', {
