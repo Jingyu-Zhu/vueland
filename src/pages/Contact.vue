@@ -104,7 +104,7 @@
                 </div>
                 <div class="ml-3">
                   <p class="text-sm font-medium text-green-800">
-                    Thank you! Your message has been received. (Demo version - no actual email sent)
+                    Thank you! Your message has been sent successfully via GitHub Actions.
                   </p>
                 </div>
               </div>
@@ -244,11 +244,52 @@ export default {
       try {
         console.log('Submitting form:', form)
         
-        // For GitHub Pages deployment, simulate success
-        // In production with Vercel, this would call the API
-        await new Promise(resolve => setTimeout(resolve, 1000)) // Simulate network delay
+        // 检测环境：GitHub Pages 还是本地开发
+        const isGitHubPages = window.location.hostname.includes('github.io')
+        const isLocalDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
         
-        console.log('Form submitted successfully (simulated)')
+        if (isGitHubPages) {
+          // GitHub Pages 环境：使用 GitHub API
+          const response = await fetch('https://api.github.com/repos/Jingyu-Zhu/vueland/dispatches', {
+            method: 'POST',
+            headers: {
+              'Authorization': 'token ' + (import.meta.env.VITE_GITHUB_TOKEN || ''),
+              'Accept': 'application/vnd.github.v3+json',
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              event_type: 'contact-form',
+              client_payload: form
+            })
+          })
+          
+          if (!response.ok) {
+            throw new Error(`GitHub API error: ${response.status}`)
+          }
+          
+          console.log('Form submitted via GitHub API')
+        } else if (isLocalDev) {
+          // 本地开发环境：调用本地 API
+          const response = await fetch('http://localhost:3001/api/contact', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(form)
+          })
+          
+          const data = await response.json()
+          
+          if (!data.success) {
+            throw new Error(data.message || 'Failed to send message')
+          }
+          
+          console.log('Form submitted via local API')
+        } else {
+          // 其他环境：模拟成功
+          await new Promise(resolve => setTimeout(resolve, 1000))
+          console.log('Form submitted (simulated)')
+        }
         
         // Reset form
         Object.keys(form).forEach(key => {

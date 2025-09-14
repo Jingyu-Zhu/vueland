@@ -1,0 +1,120 @@
+name: Contact Form API
+
+on:
+  repository_dispatch:
+    types: [contact-form]
+
+jobs:
+  handle-contact:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Install SendGrid
+      run: npm install @sendgrid/mail
+
+    - name: Send Email
+      env:
+        SENDGRID_API_KEY: ${{ secrets.SENDGRID_API_KEY }}
+        FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
+        CONTACT_EMAIL: ${{ secrets.CONTACT_EMAIL }}
+      run: |
+        node -e "
+        const sgMail = require('@sendgrid/mail');
+        sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+        
+        const formData = JSON.parse('${{ toJson(github.event.client_payload) }}');
+        
+        const emailContent = {
+          to: process.env.CONTACT_EMAIL,
+          from: process.env.FROM_EMAIL,
+          replyTo: formData.email,
+          subject: \`Contact Form: \${formData.subject}\`,
+          html: \`
+            <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;\">
+              <h2 style=\"color: #2563eb;\">New Contact Form Submission</h2>
+              <div style=\"background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;\">
+                <h3 style=\"color: #1f2937; margin-top: 0;\">Contact Details</h3>
+                <p><strong>Name:</strong> \${formData.firstName} \${formData.lastName}</p>
+                <p><strong>Email:</strong> \${formData.email}</p>
+                <p><strong>Subject:</strong> \${formData.subject}</p>
+              </div>
+              <div style=\"background-color: #ffffff; padding: 20px; border: 1px solid #e5e7eb; border-radius: 8px;\">
+                <h3 style=\"color: #1f2937; margin-top: 0;\">Message</h3>
+                <p style=\"line-height: 1.6; color: #374151;\">\${formData.message.replace(/\n/g, '<br>')}</p>
+              </div>
+            </div>
+          \`,
+          text: \`
+New Contact Form Submission
+
+Contact Details:
+Name: \${formData.firstName} \${formData.lastName}
+Email: \${formData.email}
+Subject: \${formData.subject}
+
+Message:
+\${formData.message}
+          \`
+        };
+        
+        const confirmationEmail = {
+          to: formData.email,
+          from: process.env.FROM_EMAIL,
+          subject: 'Thank you for contacting VueLand!',
+          html: \`
+            <div style=\"font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;\">
+              <h2 style=\"color: #2563eb;\">Thank you for reaching out!</h2>
+              <p>Hi \${formData.firstName},</p>
+              <p>Thank you for contacting VueLand. We've received your message and will get back to you within 24 hours.</p>
+              <div style=\"background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 20px 0;\">
+                <h3 style=\"color: #1f2937; margin-top: 0;\">Your Message Summary</h3>
+                <p><strong>Subject:</strong> \${formData.subject}</p>
+                <p><strong>Message:</strong></p>
+                <p style=\"background-color: #ffffff; padding: 15px; border-radius: 4px; border-left: 4px solid #2563eb;\">
+                  \${formData.message.replace(/\n/g, '<br>')}
+                </p>
+              </div>
+              <p>If you have any urgent questions, please don't hesitate to reach out to us directly.</p>
+              <div style=\"margin-top: 30px; padding: 15px; background-color: #eff6ff; border-radius: 8px;\">
+                <p style=\"margin: 0; color: #1e40af; font-size: 14px;\">
+                  Best regards,<br>
+                  The VueLand Team
+                </p>
+              </div>
+            </div>
+          \`,
+          text: \`
+Thank you for reaching out!
+
+Hi \${formData.firstName},
+
+Thank you for contacting VueLand. We've received your message and will get back to you within 24 hours.
+
+Your Message Summary:
+Subject: \${formData.subject}
+Message: \${formData.message}
+
+If you have any urgent questions, please don't hesitate to reach out to us directly.
+
+Best regards,
+The VueLand Team
+          \`
+        };
+        
+        try {
+          await sgMail.send(emailContent);
+          await sgMail.send(confirmationEmail);
+          console.log('Emails sent successfully');
+        } catch (error) {
+          console.error('Error sending emails:', error);
+          process.exit(1);
+        }
+        "
