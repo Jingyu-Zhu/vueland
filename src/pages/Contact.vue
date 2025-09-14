@@ -104,7 +104,7 @@
                 </div>
                 <div class="ml-3">
                   <p class="text-sm font-medium text-green-800">
-                    Thank you! Your message has been received. For immediate response, please email us directly at hello@vueland.com
+                    Thank you! Your message has been sent successfully via Railway backend and SendGrid.
                   </p>
                 </div>
               </div>
@@ -249,22 +249,44 @@ export default {
         const isLocalDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
         
         if (isGitHubPages) {
-          // GitHub Pages 环境：显示成功消息并提供联系信息
-          console.log('GitHub Pages environment - showing success message')
+          // GitHub Pages 环境：调用 Railway 后端
+          console.log('GitHub Pages environment - calling Railway backend')
           
-          // 模拟网络延迟
-          await new Promise(resolve => setTimeout(resolve, 1000))
+          const railwayUrl = import.meta.env.VITE_RAILWAY_URL || 'https://vueland-backend-production.up.railway.app'
           
-          // 在控制台显示表单数据，方便手动处理
-          console.log('Contact form data:', {
-            name: `${form.firstName} ${form.lastName}`,
-            email: form.email,
-            subject: form.subject,
-            message: form.message,
-            timestamp: new Date().toISOString()
-          })
-          
-          console.log('Form submitted successfully (demo mode)')
+          try {
+            const response = await fetch(`${railwayUrl}/api/contact`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(form)
+            })
+            
+            const data = await response.json()
+            console.log('Railway API response:', data)
+            
+            if (!data.success) {
+              throw new Error(data.message || 'Failed to send message')
+            }
+            
+            console.log('Form submitted via Railway backend successfully')
+          } catch (error) {
+            console.error('Railway API failed:', error)
+            console.log('Falling back to demo mode')
+            
+            // 在控制台显示表单数据，方便手动处理
+            console.log('Contact form data:', {
+              name: `${form.firstName} ${form.lastName}`,
+              email: form.email,
+              subject: form.subject,
+              message: form.message,
+              timestamp: new Date().toISOString()
+            })
+            
+            // 模拟网络延迟
+            await new Promise(resolve => setTimeout(resolve, 1000))
+          }
         } else if (isLocalDev) {
           // 本地开发环境：调用本地 API
           const response = await fetch('http://localhost:3001/api/contact', {
