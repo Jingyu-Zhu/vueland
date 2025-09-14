@@ -253,10 +253,17 @@ export default {
           console.log('GitHub Pages environment - triggering GitHub Actions')
           
           try {
+            const token = import.meta.env.VITE_PAT_TOKEN
+            console.log('Using GitHub token:', token ? 'Present' : 'Missing')
+            
+            if (!token) {
+              throw new Error('GitHub token not configured')
+            }
+            
             const response = await fetch('https://api.github.com/repos/Jingyu-Zhu/vueland/dispatches', {
               method: 'POST',
               headers: {
-                'Authorization': 'token ' + (import.meta.env.VITE_PAT_TOKEN || ''),
+                'Authorization': 'token ' + token,
                 'Accept': 'application/vnd.github.v3+json',
                 'Content-Type': 'application/json'
               },
@@ -266,13 +273,18 @@ export default {
               })
             })
             
+            console.log('GitHub API response status:', response.status)
+            
             if (!response.ok) {
-              throw new Error(`GitHub API error: ${response.status}`)
+              const errorText = await response.text()
+              console.error('GitHub API error response:', errorText)
+              throw new Error(`GitHub API error: ${response.status} - ${errorText}`)
             }
             
-            console.log('Form submitted via GitHub Actions')
+            console.log('Form submitted via GitHub Actions successfully')
           } catch (error) {
-            console.log('GitHub API failed, falling back to simulation:', error)
+            console.error('GitHub API failed:', error)
+            console.log('Falling back to simulation mode')
             await new Promise(resolve => setTimeout(resolve, 1000)) // 模拟网络延迟
           }
         } else if (isLocalDev) {
