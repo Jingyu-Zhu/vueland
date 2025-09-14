@@ -1,8 +1,9 @@
 name: Simple Deploy to GitHub Pages
 
 on:
-  push:
-    branches: [ main ]
+  # Disabled to avoid conflicts with main deploy workflow
+  # push:
+  #   branches: [ main ]
 
 permissions:
   contents: read
