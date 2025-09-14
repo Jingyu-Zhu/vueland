@@ -104,7 +104,7 @@
                 </div>
                 <div class="ml-3">
                   <p class="text-sm font-medium text-green-800">
-                    Thank you! Your message has been sent successfully.
+                    Thank you! Your message has been received. (Demo version - no actual email sent)
                   </p>
                 </div>
               </div>
@@ -244,55 +244,24 @@ export default {
       try {
         console.log('Submitting form:', form)
         
-        // Call the API endpoint
-        const response = await fetch('/api/contact', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(form)
+        // For GitHub Pages deployment, simulate success
+        // In production with Vercel, this would call the API
+        await new Promise(resolve => setTimeout(resolve, 1000)) // Simulate network delay
+        
+        console.log('Form submitted successfully (simulated)')
+        
+        // Reset form
+        Object.keys(form).forEach(key => {
+          form[key] = ''
         })
-
-        console.log('Response status:', response.status)
-        console.log('Response headers:', response.headers)
         
-        // Check if response is ok
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`)
-        }
-
-        // Get response text first to debug
-        const responseText = await response.text()
-        console.log('Response text:', responseText)
+        // Show success message
+        showSuccess.value = true
         
-        // Try to parse JSON
-        let data
-        try {
-          data = JSON.parse(responseText)
-        } catch (parseError) {
-          console.error('JSON parse error:', parseError)
-          console.error('Response text that failed to parse:', responseText)
-          throw new Error('Invalid response from server')
-        }
-
-        console.log('Parsed data:', data)
-
-        if (data.success) {
-          // Reset form
-          Object.keys(form).forEach(key => {
-            form[key] = ''
-          })
-          
-          // Show success message
-          showSuccess.value = true
-          
-          // Hide success message after 5 seconds
-          setTimeout(() => {
-            showSuccess.value = false
-          }, 5000)
-        } else {
-          throw new Error(data.message || 'Failed to send message')
-        }
+        // Hide success message after 5 seconds
+        setTimeout(() => {
+          showSuccess.value = false
+        }, 5000)
         
       } catch (error) {
         console.error('Error submitting form:', error)
