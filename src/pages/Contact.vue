@@ -276,6 +276,8 @@ export default {
           // 从环境变量或默认值获取 Railway URL
           const railwayUrl = import.meta.env.VITE_RAILWAY_URL || 'https://vueland-backend-production.up.railway.app'
           
+          console.log('Attempting to connect to Railway backend:', railwayUrl)
+          
           try {
             const response = await fetch(`${railwayUrl}/api/contact`, {
               method: 'POST',
@@ -302,7 +304,11 @@ export default {
             console.error('Railway API failed:', error)
             
             // 显示具体错误信息给用户
-            errorMessage.value = `Failed to connect to backend: ${error.message}. Please try again or contact us directly.`
+            if (error.message.includes('NetworkError') || error.message.includes('Failed to fetch')) {
+              errorMessage.value = `Backend server is not available. Please make sure Railway backend is deployed and running. Error: ${error.message}`
+            } else {
+              errorMessage.value = `Failed to connect to backend: ${error.message}. Please try again or contact us directly.`
+            }
             showError.value = true
             
             // 在控制台显示表单数据，方便手动处理
