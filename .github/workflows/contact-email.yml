@@ -30,6 +30,7 @@ jobs:
           cd railway-backend
           node -e "
           const sgMail = require('@sendgrid/mail');
+          const fs = require('fs');
           const { SENDGRID_API_KEY, FROM_EMAIL, CONTACT_EMAIL } = process.env;
           
           if (!SENDGRID_API_KEY || !FROM_EMAIL || !CONTACT_EMAIL) {
@@ -39,11 +40,24 @@ jobs:
           
           sgMail.setApiKey(SENDGRID_API_KEY);
           
-          const { client_payload } = JSON.parse(process.env.GITHUB_EVENT_PATH || '{}');
+          // Read the GitHub event payload
+          let eventData = {};
+          try {
+            const eventPath = process.env.GITHUB_EVENT_PATH;
+            if (eventPath && fs.existsSync(eventPath)) {
+              const eventContent = fs.readFileSync(eventPath, 'utf8');
+              eventData = JSON.parse(eventContent);
+            }
+          } catch (error) {
+            console.error('Error reading GitHub event:', error);
+            process.exit(1);
+          }
+          
+          const { client_payload } = eventData;
           const { name, email, subject, message } = client_payload || {};
           
           if (!name || !email || !subject || !message) {
-            console.error('Missing required form data');
+            console.error('Missing required form data:', { name, email, subject, message });
             process.exit(1);
           }
           
