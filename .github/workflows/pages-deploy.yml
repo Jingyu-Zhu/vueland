@@ -31,7 +31,7 @@ jobs:
 
     - name: Build
       env:
-        VITE_RAILWAY_URL: ${{ secrets.RAILWAY_URL }}
+        VITE_PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
       run: npm run build
 
     - name: Setup Pages

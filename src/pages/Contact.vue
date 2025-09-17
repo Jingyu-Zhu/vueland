@@ -104,7 +104,7 @@
                 </div>
                 <div class="ml-3">
                   <p class="text-sm font-medium text-green-800">
-                    Thank you! Your message has been sent successfully via Railway backend and SendGrid.
+                    Thank you! Your message has been sent successfully via GitHub Actions and SendGrid.
                   </p>
                 </div>
               </div>
@@ -261,6 +261,7 @@ export default {
     const submitForm = async () => {
       isSubmitting.value = true
       showSuccess.value = false
+      showError.value = false
 
       try {
         console.log('Submitting form:', form)
@@ -270,49 +271,50 @@ export default {
         const isLocalDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
         
         if (isGitHubPages) {
-          // GitHub Pages 环境：调用 Railway 后端
-          console.log('GitHub Pages environment - calling Railway backend')
-          
-          // 从环境变量或默认值获取 Railway URL
-          const railwayUrl = import.meta.env.VITE_RAILWAY_URL || 'https://vueland-backend-production.up.railway.app'
-          
-          console.log('Attempting to connect to Railway backend:', railwayUrl)
+          // GitHub Pages 环境：使用 GitHub API 触发 Actions
+          console.log('GitHub Pages environment - using GitHub API')
           
           try {
-            const response = await fetch(`${railwayUrl}/api/contact`, {
+            // 使用 GitHub API 触发 repository_dispatch 事件
+            const response = await fetch('https://api.github.com/repos/Jingyu-Zhu/vueland/dispatches', {
               method: 'POST',
               headers: {
-                'Content-Type': 'application/json',
+                'Accept': 'application/vnd.github.v3+json',
+                'Authorization': `token ${import.meta.env.VITE_PAT_TOKEN || 'demo'}`,
+                'Content-Type': 'application/json'
               },
-              body: JSON.stringify(form)
+              body: JSON.stringify({
+                event_type: 'contact-form',
+                client_payload: {
+                  name: `${form.firstName} ${form.lastName}`,
+                  email: form.email,
+                  subject: form.subject,
+                  message: form.message
+                }
+              })
             })
             
             if (!response.ok) {
               const errorText = await response.text()
-              throw new Error(`HTTP ${response.status}: ${errorText}`)
+              throw new Error(`GitHub API Error ${response.status}: ${errorText}`)
             }
             
-            const data = await response.json()
-            console.log('Railway API response:', data)
-            
-            if (!data.success) {
-              throw new Error(data.message || 'Failed to send message')
-            }
-            
-            console.log('Form submitted via Railway backend successfully')
+            console.log('GitHub API triggered successfully')
           } catch (error) {
-            console.error('Railway API failed:', error)
+            console.error('GitHub API failed:', error)
             
-            // 显示具体错误信息给用户
-            if (error.message.includes('NetworkError') || error.message.includes('Failed to fetch')) {
-              errorMessage.value = `Backend server is not available. Please make sure Railway backend is deployed and running. Error: ${error.message}`
+            // 如果 GitHub API 失败，显示错误信息
+            if (error.message.includes('401') || error.message.includes('403')) {
+              errorMessage.value = 'GitHub authentication failed. Please check if PAT_TOKEN is configured correctly.'
+            } else if (error.message.includes('NetworkError') || error.message.includes('Failed to fetch')) {
+              errorMessage.value = 'Network error. Please check your internet connection and try again.'
             } else {
-              errorMessage.value = `Failed to connect to backend: ${error.message}. Please try again or contact us directly.`
+              errorMessage.value = `Failed to send message: ${error.message}. Please try again or contact us directly.`
             }
             showError.value = true
             
             // 在控制台显示表单数据，方便手动处理
-            console.log('Contact form data:', {
+            console.log('Contact form data (for manual processing):', {
               name: `${form.firstName} ${form.lastName}`,
               email: form.email,
               subject: form.subject,
@@ -373,7 +375,8 @@ export default {
         
       } catch (error) {
         console.error('Error submitting form:', error)
-        alert(`Error: ${error.message}. Please try again.`)
+        errorMessage.value = `Unexpected error: ${error.message}. Please try again.`
+        showError.value = true
       } finally {
         isSubmitting.value = false
       }
