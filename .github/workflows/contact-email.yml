@@ -18,8 +18,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd railway-backend
-          npm install
+          npm install @sendgrid/mail
 
       - name: Send email via SendGrid
         env:
@@ -27,7 +26,6 @@ jobs:
           FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
           CONTACT_EMAIL: ${{ secrets.CONTACT_EMAIL }}
         run: |
-          cd railway-backend
           node -e "
           const sgMail = require('@sendgrid/mail');
           const fs = require('fs');

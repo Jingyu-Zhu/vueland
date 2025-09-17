@@ -1,17 +1,18 @@
-# VueLand - Vue.js Landing Page with SendGrid Integration
+# VueLand - Vue.js Landing Page with GitHub-Only SendGrid Integration
 
-A modern, responsive landing page built with Vue.js, Vite, Tailwind CSS, and integrated with SendGrid for email functionality.
+A modern, responsive landing page built with Vue.js, Vite, Tailwind CSS, and integrated with SendGrid for email functionality using GitHub Actions.
 
 ## 🚀 Features
 
 - **Modern Vue.js 3** with Composition API
 - **Vue Router** for single-page application navigation
 - **Tailwind CSS** for responsive, utility-first styling
-- **SendGrid Integration** for contact form email handling
-- **Express.js Backend** for API endpoints
+- **GitHub Actions** for serverless email handling
+- **SendGrid Integration** via GitHub Actions
 - **Professional Email Templates** with HTML formatting
 - **Mobile-First Design** with responsive layouts
 - **Contact Form** with validation and success feedback
+- **100% GitHub-based** - No external hosting required
 
 ## 📁 Project Structure
 
@@ -26,10 +27,10 @@ vueland/
 │   ├── App.vue               # Main app component
 │   ├── main.js               # App entry point
 │   └── style.css             # Global styles
-├── server/
-│   ├── index.js              # Express server
-│   ├── package.json          # Server dependencies
-│   └── config.example.js     # Configuration template
+├── .github/
+│   └── workflows/
+│       ├── contact-email.yml # SendGrid email workflow
+│       └── pages-deploy.yml  # GitHub Pages deployment
 ├── dist/                     # Build output
 └── README.md
 ```
@@ -42,11 +43,10 @@ vueland/
 - **Vue Router** - Official router for Vue.js
 - **Tailwind CSS** - Utility-first CSS framework
 
-### Backend
-- **Express.js** - Web framework for Node.js
+### Backend (GitHub Actions)
+- **GitHub Actions** - Serverless workflow automation
 - **SendGrid** - Email delivery service
-- **CORS** - Cross-origin resource sharing
-- **Nodemon** - Development server with auto-reload
+- **Node.js** - Runtime for email processing
 
 ## 🚀 Quick Start
 

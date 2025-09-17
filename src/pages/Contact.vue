@@ -325,39 +325,10 @@ export default {
             // 模拟网络延迟
             await new Promise(resolve => setTimeout(resolve, 1000))
           }
-        } else if (isLocalDev) {
-          // 本地开发环境：调用本地 API
-          try {
-            const response = await fetch('http://localhost:3001/api/contact', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify(form)
-            })
-            
-            if (!response.ok) {
-              const errorText = await response.text()
-              throw new Error(`HTTP ${response.status}: ${errorText}`)
-            }
-            
-            const data = await response.json()
-            
-            if (!data.success) {
-              throw new Error(data.message || 'Failed to send message')
-            }
-            
-            console.log('Form submitted via local API')
-          } catch (error) {
-            console.error('Local API failed:', error)
-            errorMessage.value = `Failed to connect to local backend: ${error.message}. Please make sure the backend is running on port 3001.`
-            showError.value = true
-            await new Promise(resolve => setTimeout(resolve, 1000))
-          }
         } else {
-          // 其他环境：模拟成功
+          // 本地开发环境：模拟成功
           await new Promise(resolve => setTimeout(resolve, 1000))
-          console.log('Form submitted (simulated)')
+          console.log('Form submitted (simulated for local development)')
         }
         
         // Reset form
